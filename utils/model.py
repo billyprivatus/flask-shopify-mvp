@@ -8,8 +8,10 @@ from wrapper.openAiEmbeddingWrapper import OpenAIEmbeddingsWrapper
 from wrapper.pineconeWrapper import PineconeWrapper
 
 from utils.evaluation import evaluate_retrievals, process_binary_responses
+from utils.customPrompt import get_custom_chain_type_args
 
-from langchain.chains import RetrievalQA
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder, PromptTemplate
+from langchain.chains import RetrievalQA, RetrievalQAWithSourcesChain
 from langchain.chat_models import ChatOpenAI
 
 MODEL = "text-embedding-ada-002"
@@ -35,12 +37,14 @@ docsearch = PineconeWrapper.from_existing_index(
     embedding=embeddings,
     namespace=pinecone_namespace
 )
-llm = ChatOpenAI(model_name=chat_model_name, request_timeout=30)
+
+
+llm = ChatOpenAI(temperature=0, model_name=chat_model_name, request_timeout=30)
 chain = RetrievalQA.from_chain_type(
     llm=llm,
     chain_type="stuff",
-    retriever=docsearch.as_retriever(
-        search_kwargs={"k": num_retrieved_documents}),
+    retriever=docsearch.as_retriever(),
+    chain_type_kwargs=get_custom_chain_type_args()
 )
 
 
@@ -56,7 +60,7 @@ def generate_query_df(prompts, chain, docsearch, embeddings, num_retrieved_docum
         print('progress => ', index, '/', len(prompts))
         time.sleep(1)  # Solve hang issue
 
-        response_text = chain.run(prompt)
+        response_text = chain.run(prompt)  # chain.run(prompt)
         print('.')
         retrievals_df = docsearch.retrieval_dataframe.tail(
             num_retrieved_documents)
