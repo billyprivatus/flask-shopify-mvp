@@ -39,7 +39,8 @@ docsearch = PineconeWrapper.from_existing_index(
 )
 
 
-llm = ChatOpenAI(temperature=0, model_name=chat_model_name, request_timeout=30)
+llm = ChatOpenAI(temperature=0.5, model_name=chat_model_name,
+                 request_timeout=30)
 chain = RetrievalQA.from_chain_type(
     llm=llm,
     chain_type="stuff",
