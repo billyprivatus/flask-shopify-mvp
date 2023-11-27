@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from utils.prep import generate_products_json
 from utils.pinecone import upsert_doc
-from utils.model import generate_evaluated_response
+from utils.model import generate_response_df, generate_evaluated_response_df
 
 app = Flask(__name__)
 
@@ -20,19 +20,20 @@ def webhook():
         return jsonify(response), 200
 
 
-@app.route('/calculate-response-with-score', methods=['POST'])
-def calculateResponseWithScore():
+@app.route('/generate-response', methods=['POST'])
+def generateResponse():
     if request.method == 'POST':
-        response_df = generate_evaluated_response(request)
+        response_df = generate_response_df(request)
         response_obj = response_df.to_json(orient='records')
     return response_obj
 
 
-@app.route('/test', methods=['GET'])
-def test():
-    if request.method == 'GET':
-        response = {'message': 'Test successfully'}
-        return jsonify(response), 200
+@app.route('/generate-response-with-score', methods=['POST'])
+def generateResponseWithScore():
+    if request.method == 'POST':
+        response_df = generate_evaluated_response_df(request)
+        response_obj = response_df.to_json(orient='records')
+    return response_obj
 
 
 if __name__ == '__main__':

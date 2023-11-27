@@ -51,7 +51,8 @@ chain = RetrievalQA.from_chain_type(
 
 def generate_query_df(prompts, chain, docsearch, embeddings, num_retrieved_documents=2):
     query_df_data = {"text": [], "text_vector": [],
-                     "response": [], "user_feedback": []}
+                     "response": []  # "user_feedback": []
+                     }
 
     for context_index in range(num_retrieved_documents):
         query_df_data[f"context_text_{context_index}"] = []
@@ -74,7 +75,7 @@ def generate_query_df(prompts, chain, docsearch, embeddings, num_retrieved_docum
         query_df_data["text"].append(prompt)
         query_df_data["text_vector"].append(query_embedding.tolist())
         query_df_data["response"].append(response_text)
-        query_df_data["user_feedback"].append(float("nan"))  # TODO: Implement
+        # query_df_data["user_feedback"].append(float("nan"))  # TODO: Implement
 
         for context_index in range(num_retrieved_documents):
             context_text = contexts[context_index] if context_index < len(
@@ -88,7 +89,7 @@ def generate_query_df(prompts, chain, docsearch, embeddings, num_retrieved_docum
     return pd.DataFrame(query_df_data)
 
 
-def generate_evaluated_response(request):
+def generate_response_df(request):
     num_retrieved_documents = 2
 
     request_json = request.json
@@ -100,6 +101,12 @@ def generate_evaluated_response(request):
         embeddings=embeddings,
         num_retrieved_documents=num_retrieved_documents
     )
+
+    return query_df
+
+
+def generate_evaluated_response_df(request):
+    query_df = generate_response_df(request)
 
     context_text_column_names = list(map(
         lambda context_index: f"context_text_{context_index}", range(num_retrieved_documents)))
