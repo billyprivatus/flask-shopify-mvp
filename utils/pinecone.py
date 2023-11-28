@@ -4,8 +4,11 @@ import openai
 import pinecone
 
 from langchain.document_loaders.json_loader import JSONLoader
-from langchain.vectorstores.pinecone import Pinecone
-from langchain.text_splitter import CharacterTextSplitter
+# from langchain.vectorstores.pinecone import Pinecone
+# from langchain.text_splitter import CharacterTextSplitter
+
+from wrapper.openAiEmbeddingWrapper import OpenAIEmbeddingsWrapper
+from wrapper.pineconeWrapper import PineconeWrapper, get_pinecone_database_df_by_namespace
 
 MODEL = "text-embedding-ada-002"
 
@@ -13,6 +16,21 @@ pinecone_api_key = os.getenv("PINECONE_API_KEY")
 pinecone_env = os.getenv("PINECONE_ENV")
 pinecone_index_name = os.getenv("PINECONE_INDEX")
 pinecone_namespace = os.getenv("PINECONE_NAMESPACE")
+
+
+def get_vectorstores_data():
+    embeddings = OpenAIEmbeddingsWrapper(model=MODEL)
+    docsearch = PineconeWrapper.from_existing_index(
+        index_name=pinecone_index_name,
+        embedding=embeddings,
+        namespace=pinecone_namespace
+    )
+    pinecone_index = docsearch.get_pinecone_index(pinecone_index_name)
+    database_df = get_pinecone_database_df_by_namespace(
+        index=pinecone_index,
+        namespace=pinecone_namespace
+    )
+    return database_df
 
 
 def metadata_func(record: dict, metadata: dict) -> dict:

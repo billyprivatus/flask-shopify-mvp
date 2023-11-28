@@ -89,9 +89,7 @@ def generate_query_df(prompts, chain, docsearch, embeddings, num_retrieved_docum
     return pd.DataFrame(query_df_data)
 
 
-def generate_response_df(request):
-    num_retrieved_documents = 2
-
+def generate_response_df(request, num_retrieved_documents=2):
     request_json = request.json
     prompt = request_json['prompt']
     query_df = generate_query_df(
@@ -105,11 +103,14 @@ def generate_response_df(request):
     return query_df
 
 
-def generate_evaluated_response_df(request):
-    query_df = generate_response_df(request)
+def evaluate_response_df(query_df, num_retrieved_documents=2):
+    columns_to_drop = ['openai_relevance_0', 'openai_relevance_1',
+                       'openai_precision@1', 'openai_precision@2']
+    query_df = query_df.drop(columns=columns_to_drop)
 
     context_text_column_names = list(map(
         lambda context_index: f"context_text_{context_index}", range(num_retrieved_documents)))
+
     openai_evaluations_df = query_df.copy(
     )[["text"] + context_text_column_names]
 
@@ -123,8 +124,12 @@ def generate_evaluated_response_df(request):
             raw_responses, {0: "irrelevant", 1: "relevant"})
         openai_evaluations_df[f"openai_relevance_{context_index}"] = processed_responses
 
+    print('query df =', query_df.columns)
+    print('openai eval df =', openai_evaluations_df.columns)
+
     query_and_evaluations_df = pd.merge(query_df, openai_evaluations_df, on=[
         "text"] + context_text_column_names)
+
     query_and_evaluations_df[["text", "context_text_0",
                               "context_text_1", "openai_relevance_0", "openai_relevance_1"]]
 
