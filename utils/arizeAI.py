@@ -64,8 +64,6 @@ def get_arize_url(query_df, database_df):
     query_df['context_scores'] = query_df.apply(lambda row: np.array(
             [row['context_similarity_0'], row['context_similarity_1']]), axis=1)
 
-    print(query_df.columns)
-
     query_df = query_df.rename(columns={
         '_id': ':id.id:',
         'text': ':feature.text:prompt',
