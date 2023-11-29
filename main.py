@@ -1,4 +1,6 @@
+import numpy as np
 import pandas as pd
+
 from flask import Flask, request, jsonify
 
 # from utils.format import camel_to_snake
@@ -47,7 +49,14 @@ def evaluateDBRecords():
     if request.method == 'POST':
         documents = get_documents()
         query_df = pd.DataFrame(list(documents))
-        query_df = query_df[query_df.openai_relevance_0.isnull()]
+
+        if ('openai_relevance_0' in query_df):
+            query_df = query_df[query_df.openai_relevance_0.isnull()]
+        else:
+            query_df['openai_relevance_0'] = np.nan
+            query_df['openai_relevance_1'] = np.nan
+            query_df['openai_precision@1'] = np.nan
+            query_df['openai_precision@2'] = np.nan
 
         if (len(query_df) < 1):
             return 'no new records to evaluate'

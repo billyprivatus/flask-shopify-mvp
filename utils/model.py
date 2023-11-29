@@ -50,7 +50,7 @@ chain = RetrievalQA.from_chain_type(
 
 
 def generate_query_df(prompts, chain, docsearch, embeddings, num_retrieved_documents=2):
-    query_df_data = {"text": [], "text_vector": [],
+    query_df_data = {"document_ids": [], "text": [], "text_vector": [],
                      "response": []  # "user_feedback": []
                      }
 
@@ -66,13 +66,14 @@ def generate_query_df(prompts, chain, docsearch, embeddings, num_retrieved_docum
         print('.')
         retrievals_df = docsearch.retrieval_dataframe.tail(
             num_retrieved_documents)
-        print(retrievals_df.columns)
         print('..')
+        ids = retrievals_df["id"].to_list()
         contexts = retrievals_df["document_text"].to_list()
         scores = retrievals_df["score"].to_list()
         query_embedding = embeddings.query_embedding_dataframe["text_vector"].iloc[-1]
         print('...')
 
+        query_df_data["document_ids"].append(ids)
         query_df_data["text"].append(prompt)
         query_df_data["text_vector"].append(query_embedding.tolist())
         query_df_data["response"].append(response_text)

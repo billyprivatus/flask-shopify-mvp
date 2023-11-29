@@ -57,14 +57,16 @@ def get_pinecone_database_df_by_namespace(index, namespace="", num_dimensions=15
         num_dimensions=num_dimensions,
         injected_stats=injected_stats
     )
+    ids = []
     texts = []
     text_vectors = []
 
     for vector in list(all_vector_ids_to_vector.values()):
+        ids.append(str(vector.metadata["id"]))
         texts.append(vector.metadata["text"])
         text_vectors.append(np.array(vector.values))
 
-    return pd.DataFrame({"text": texts, "text_vector": text_vectors})
+    return pd.DataFrame({"id": ids, "text": texts, "text_vector": text_vectors})
 
 
 class PineconeWrapper(Pinecone):
@@ -89,19 +91,21 @@ class PineconeWrapper(Pinecone):
 
     @property
     def retrieval_dataframe(self) -> pd.DataFrame:
+        ids = []
         query_texts = []
         document_texts = []
         retrieval_ranks = []
         scores = []
         for query_text, document_score_tuples in self.query_text_to_document_score_tuples.items():
-            print('query_text =', query_text)
             for retrieval_rank, (document, score) in enumerate(document_score_tuples):
+                ids.append(str(document.metadata['id']))
                 query_texts.append(query_text)
                 document_texts.append(document.page_content)
                 retrieval_ranks.append(retrieval_rank)
                 scores.append(score)
         return pd.DataFrame.from_dict(
             {
+                "id": ids,
                 "query_text": query_texts,
                 "document_text": document_texts,
                 "retrieval_rank": retrieval_ranks,
