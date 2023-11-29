@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import phoenix as px
 
@@ -62,7 +63,7 @@ def get_arize_url(query_df, database_df):
     )
 
     query_df['context_scores'] = query_df.apply(lambda row: np.array(
-            [row['context_similarity_0'], row['context_similarity_1']]), axis=1)
+        [row['context_similarity_0'], row['context_similarity_1']]), axis=1)
 
     query_df = query_df.rename(columns={
         '_id': ':id.id:',
@@ -82,7 +83,8 @@ def get_arize_url(query_df, database_df):
     query_df = query_df.drop(columns=['context_text_0', 'context_text_1'])
     query_ds = px.Dataset.from_open_inference(query_df)
 
-    session = px.launch_app(primary=query_ds, corpus=database_ds)
+    port = os.getenv('PHOENIX_PORT')
+    session = px.launch_app(primary=query_ds, corpus=database_ds, port=port)
 
     return session
 
