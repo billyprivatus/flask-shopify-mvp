@@ -67,6 +67,8 @@ def getArizeAIView():
 
         session = get_arize_url(query_df, database_df)
 
+        print('session =', session)
+
     return session.url
 
 

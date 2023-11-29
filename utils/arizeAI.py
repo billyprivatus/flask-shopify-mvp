@@ -27,6 +27,8 @@ def data_prep(query_df, database_df):
 
 
 def get_arize_url(query_df, database_df):
+    px.close_app()
+
     [query_df, database_df] = data_prep(query_df, database_df)
 
     query_schema = px.Schema(
@@ -57,18 +59,19 @@ def get_arize_url(query_df, database_df):
     )
 
     # Dataset
-    database_ds = px.Dataset(
-        dataframe=database_df,
-        schema=database_schema,
-        name="pinecone",
-    )
-    query_ds = px.Dataset(
+    prim_ds = px.Dataset(
         dataframe=query_df,
         schema=query_schema,
 
         name="query",
     )
+    corpus_ds = px.Dataset(
+        dataframe=database_df,
+        schema=database_schema,
+        name="pinecone",
+    )
 
-    session = px.launch_app(primary=query_ds, corpus=database_ds)
+    session = px.launch_app(
+        primary=prim_ds, corpus=corpus_ds, port=6060)
 
     return session

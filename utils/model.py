@@ -66,6 +66,7 @@ def generate_query_df(prompts, chain, docsearch, embeddings, num_retrieved_docum
         print('.')
         retrievals_df = docsearch.retrieval_dataframe.tail(
             num_retrieved_documents)
+        print(retrievals_df.columns)
         print('..')
         contexts = retrievals_df["document_text"].to_list()
         scores = retrievals_df["score"].to_list()
